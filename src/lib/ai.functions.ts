@@ -48,14 +48,14 @@ export const planQuestion = createServerFn({ method: "POST" })
       history: z.array(z.object({ role: z.string(), text: z.string(), spec: z.any().optional() })).max(8),
     }).parse(d),
   )
-  .handler(async ({ data }): Promise<Result<unknown>> => {
+  .handler(async ({ data }): Promise<Result<string>> => {
     const { complete, extractJSON } = await import("./ai.server");
     const schema = data.columns.map((c) => `- "${c.name}" (${c.type}${c.role ? `, ${c.role}` : ""})${c.values?.length ? ` values: ${c.values.slice(0, 25).join(" | ")}` : ""}${c.min != null ? ` range: ${c.min} → ${c.max}` : ""}`).join("\n");
     const hist = data.history.map((h) => `${h.role}: ${h.text}${h.spec ? `\n  [spec: ${JSON.stringify(h.spec)}]` : ""}`).join("\n");
     const prompt = `Dataset "${data.datasetName}" with ${data.rowCount} rows. Currency INR.\nColumns:\n${schema}\n${data.samples?.length ? `Sample rows:\n${JSON.stringify(data.samples)}\n` : ""}${hist ? `\nConversation so far:\n${hist}\n` : ""}\nUser question: ${data.question}`;
     try {
       const text = await complete(`${RULES}\n\n${SPEC_DOC}`, prompt);
-      return { ok: true, data: extractJSON(text) };
+      return { ok: true, data: JSON.stringify(extractJSON(text)) };
     } catch (e) {
       return { ok: false, error: e instanceof Error && "status" in e ? e.message : "The AI response couldn't be understood. Try rephrasing your question." };
     }

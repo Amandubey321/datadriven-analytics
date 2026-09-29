@@ -83,7 +83,7 @@ function Analyst({ ds }: { ds: Dataset }) {
       const history = msgs.slice(-8).map((m) => ({ role: m.role, text: m.text.slice(0, 400), spec: m.spec }));
       const res = await plan({ data: { question: q, ...ctx, history } });
       if (!res.ok) return fail(res.error);
-      const p = res.data as { action?: string; title?: string; message?: string; columnsUsed?: string[]; spec?: unknown; forecast?: { dateColumn: string; valueColumn: string; horizon: string } };
+      const p = JSON.parse(res.data) as { action?: string; title?: string; message?: string; columnsUsed?: string[]; spec?: unknown; forecast?: { dateColumn: string; valueColumn: string; horizon: string } };
       const action = p.action ?? "query";
 
       if (action === "clarify" || action === "insufficient") {
