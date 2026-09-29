@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalystRouteImport } from './routes/analyst'
 import { Route as DataRouteImport } from './routes/data'
 import { Route as QualityRouteImport } from './routes/quality'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalystRoute = AnalystRouteImport.update({
+  id: '/analyst',
+  path: '/analyst',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DataRoute = DataRouteImport.update({
@@ -31,30 +37,34 @@ const QualityRoute = QualityRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
   '/quality': typeof QualityRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
   '/quality': typeof QualityRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
   '/quality': typeof QualityRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/data' | '/quality'
+  fullPaths: '/' | '/analyst' | '/data' | '/quality'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/data' | '/quality'
-  id: '__root__' | '/' | '/data' | '/quality'
+  to: '/' | '/analyst' | '/data' | '/quality'
+  id: '__root__' | '/' | '/analyst' | '/data' | '/quality'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalystRoute: typeof AnalystRoute
   DataRoute: typeof DataRoute
   QualityRoute: typeof QualityRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analyst': {
+      id: '/analyst'
+      path: '/analyst'
+      fullPath: '/analyst'
+      preLoaderRoute: typeof AnalystRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/data': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalystRoute: AnalystRoute,
   DataRoute: DataRoute,
   QualityRoute: QualityRoute,
 }
