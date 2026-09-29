@@ -115,19 +115,27 @@ export async function parseFile(file: File): Promise<Dataset> {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   const base = file.name.replace(/\.[^.]+$/, "");
   try {
-    if (ext === "csv" || ext === "txt" || ext === "tsv") {
+    if (["csv", "txt", "tsv", "psv", "dat", "tab"].includes(ext)) {
       const Papa = (await import("papaparse")).default;
       const text = await file.text();
-      const res = Papa.parse<Record<string, unknown>>(text, { header: true, skipEmptyLines: "greedy", dynamicTyping: false });
+      const res = Papa.parse<Record<string, unknown>>(text, { header: true, skipEmptyLines: "greedy", dynamicTyping: false, delimitersToGuess: [",", "\t", ";", "|", ":"] });
       if (!res.data.length) throw new Error("Couldn't read any rows from this file.");
       return buildDataset(base, file.name, res.data);
     }
-    if (ext === "xlsx" || ext === "xls") {
+    if (["xlsx", "xls", "xlsm", "xlsb", "ods", "fods", "numbers", "dbf", "html", "htm"].includes(ext)) {
       const XLSX = await import("xlsx");
       const wb = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: null, raw: true });
-      return buildDataset(base, `${file.name} · ${wb.SheetNames[0]}`, data);
+      // Pick the sheet with the most rows
+      let best = wb.SheetNames[0], bestData: Record<string, unknown>[] = [];
+      for (const n of wb.SheetNames) {
+        const d = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[n], { defval: null, raw: true });
+        if (d.length > bestData.length) { best = n; bestData = d; }
+      }
+      return buildDataset(base, `${file.name} · ${best}`, bestData);
+    }
+    if (ext === "jsonl" || ext === "ndjson") {
+      const arr = (await file.text()).split(/\r?\n/).filter((l) => l.trim()).map((l) => JSON.parse(l));
+      return buildDataset(base, file.name, arr.filter((r) => r && typeof r === "object"));
     }
     if (ext === "json") {
       const json = JSON.parse(await file.text());
@@ -135,9 +143,22 @@ export async function parseFile(file: File): Promise<Dataset> {
       if (!Array.isArray(arr)) throw new Error("JSON must be an array of records, or contain one.");
       return buildDataset(base, file.name, arr.filter((r) => r && typeof r === "object"));
     }
+    if (ext === "xml") {
+      const doc = new DOMParser().parseFromString(await file.text(), "application/xml");
+      if (doc.querySelector("parsererror")) throw new Error("JSON parse: bad XML");
+      const root = doc.documentElement;
+      const recs = Array.from(root.children).length === 1 && root.children[0].children.length ? Array.from(root.children[0].children) : Array.from(root.children);
+      const arr = recs.map((el) => {
+        const o: Record<string, unknown> = {};
+        for (const a of Array.from(el.attributes)) o[a.name] = a.value;
+        for (const c of Array.from(el.children)) o[c.tagName] = c.textContent;
+        return o;
+      });
+      return buildDataset(base, file.name, arr);
+    }
   } catch (e) {
     if (e instanceof Error && !/Unexpected|JSON|zip|CFB/i.test(e.message)) throw e;
     throw new Error("This file looks damaged or isn't in the format its name says. Try re-exporting it.");
   }
-  throw new Error("Unsupported file type. Use CSV, TXT, XLSX, XLS or JSON.");
+  throw new Error("Unsupported file type. Use CSV, TSV, TXT, Excel (XLSX/XLS/XLSM/XLSB), ODS, Numbers, JSON, JSONL, XML or HTML.");
 }
