@@ -23,8 +23,8 @@ export function UploadZone({ compact }: { compact?: boolean }) {
       >
         <Upload className="mx-auto size-8 text-saffron" />
         <div className="mt-3 font-semibold">Drop a file here or click to browse</div>
-        <div className="mt-1 text-xs text-muted-foreground">CSV, TXT, XLSX, XLS or JSON · up to 50 MB · processed in your browser</div>
-        <input ref={input} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,.json" className="hidden" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
+        <div className="mt-1 text-xs text-muted-foreground">CSV, TSV, TXT, Excel (XLSX/XLS/XLSM/XLSB), ODS, Numbers, JSON, JSONL, XML, HTML, DBF · up to 50 MB · processed in your browser</div>
+        <input ref={input} type="file" accept=".csv,.txt,.tsv,.psv,.dat,.tab,.xlsx,.xls,.xlsm,.xlsb,.ods,.fods,.numbers,.dbf,.html,.htm,.json,.jsonl,.ndjson,.xml" className="hidden" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
       <Pipeline job={job} onDone={done} />
     </>
