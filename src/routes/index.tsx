@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, Loader2, Upload, PlayCircle, Sparkles as _s } from "lucide-react";
+import { ArrowRight, Loader2, Upload, PlayCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FilterBar } from "@/components/FilterBar";
 import { KpiCard } from "@/components/KpiCard";
 import { ChartCard } from "@/components/charts/ChartCard";
+import { ForecastChart } from "@/components/charts/ForecastChart";
 import { InsightList } from "@/components/InsightList";
 import { useDemoLauncher, UploadZone } from "@/components/UploadZone";
 import { Logo } from "@/components/Logo";
@@ -19,7 +20,6 @@ import { forecast } from "@/lib/data/forecast";
 import { formatValue } from "@/lib/data/format";
 import { explainData } from "@/lib/ai.functions";
 import { INDUSTRIES } from "@/lib/data/industries";
-void _s;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -140,9 +140,12 @@ function Dashboard({ ds }: { ds: Dataset }) {
       </section>
 
       {fc && !fc.error && (
-        <div className="mt-6">
-          <ChartCard title={`${V} forecast — next 3 months`} subtitle={`Estimate · ${fc.method} · shaded band = 95% range`} type="line" data={{ labelKey: "period", valueKeys: ["actual", "forecast", "lower", "upper"], rows: fc.points.slice(-18) as never }}
-            actions={<Button asChild variant="ghost" size="sm" className="h-7 text-xs"><Link to="/forecasts">Open forecasts</Link></Button>} />
+        <div className="mt-6 rounded-xl border bg-card p-4 shadow-card">
+          <div className="mb-2 flex items-center justify-between">
+            <div><h3 className="text-sm font-semibold">{V} forecast — next 3 months</h3><p className="text-xs text-muted-foreground">Estimate · {fc.method} · shaded band = 95% range</p></div>
+            <Button asChild variant="ghost" size="sm" className="no-print h-7 text-xs"><Link to="/forecasts">Open forecasts</Link></Button>
+          </div>
+          <ForecastChart points={fc.points.slice(-18)} valueKey={V!} height={260} />
         </div>
       )}
     </div>
