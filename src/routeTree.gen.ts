@@ -12,7 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalystRouteImport } from './routes/analyst'
 import { Route as DataRouteImport } from './routes/data'
+import { Route as ForecastsRouteImport } from './routes/forecasts'
 import { Route as QualityRouteImport } from './routes/quality'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as VisualizationsRouteImport } from './routes/visualizations'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,9 +34,34 @@ const DataRoute = DataRouteImport.update({
   path: '/data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForecastsRoute = ForecastsRouteImport.update({
+  id: '/forecasts',
+  path: '/forecasts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QualityRoute = QualityRouteImport.update({
   id: '/quality',
   path: '/quality',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisualizationsRoute = VisualizationsRouteImport.update({
+  id: '/visualizations',
+  path: '/visualizations',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -39,34 +69,82 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
+  '/forecasts': typeof ForecastsRoute
   '/quality': typeof QualityRoute
+  '/reports': typeof ReportsRoute
+  '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
+  '/visualizations': typeof VisualizationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
+  '/forecasts': typeof ForecastsRoute
   '/quality': typeof QualityRoute
+  '/reports': typeof ReportsRoute
+  '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
+  '/visualizations': typeof VisualizationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyst': typeof AnalystRoute
   '/data': typeof DataRoute
+  '/forecasts': typeof ForecastsRoute
   '/quality': typeof QualityRoute
+  '/reports': typeof ReportsRoute
+  '/saved': typeof SavedRoute
+  '/settings': typeof SettingsRoute
+  '/visualizations': typeof VisualizationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyst' | '/data' | '/quality'
+  fullPaths:
+    | '/'
+    | '/analyst'
+    | '/data'
+    | '/forecasts'
+    | '/quality'
+    | '/reports'
+    | '/saved'
+    | '/settings'
+    | '/visualizations'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyst' | '/data' | '/quality'
-  id: '__root__' | '/' | '/analyst' | '/data' | '/quality'
+  to:
+    | '/'
+    | '/analyst'
+    | '/data'
+    | '/forecasts'
+    | '/quality'
+    | '/reports'
+    | '/saved'
+    | '/settings'
+    | '/visualizations'
+  id:
+    | '__root__'
+    | '/'
+    | '/analyst'
+    | '/data'
+    | '/forecasts'
+    | '/quality'
+    | '/reports'
+    | '/saved'
+    | '/settings'
+    | '/visualizations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalystRoute: typeof AnalystRoute
   DataRoute: typeof DataRoute
+  ForecastsRoute: typeof ForecastsRoute
   QualityRoute: typeof QualityRoute
+  ReportsRoute: typeof ReportsRoute
+  SavedRoute: typeof SavedRoute
+  SettingsRoute: typeof SettingsRoute
+  VisualizationsRoute: typeof VisualizationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,11 +170,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forecasts': {
+      id: '/forecasts'
+      path: '/forecasts'
+      fullPath: '/forecasts'
+      preLoaderRoute: typeof ForecastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quality': {
       id: '/quality'
       path: '/quality'
       fullPath: '/quality'
       preLoaderRoute: typeof QualityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visualizations': {
+      id: '/visualizations'
+      path: '/visualizations'
+      fullPath: '/visualizations'
+      preLoaderRoute: typeof VisualizationsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -106,7 +219,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalystRoute: AnalystRoute,
   DataRoute: DataRoute,
+  ForecastsRoute: ForecastsRoute,
   QualityRoute: QualityRoute,
+  ReportsRoute: ReportsRoute,
+  SavedRoute: SavedRoute,
+  SettingsRoute: SettingsRoute,
+  VisualizationsRoute: VisualizationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
