@@ -93,6 +93,7 @@ function Dashboard({ ds }: { ds: Dataset }) {
           <p className="text-sm text-muted-foreground">{INDUSTRIES[industry].name} view · {currentLabel}{previousLabel ? ` vs ${previousLabel}` : ""} · {rows.length.toLocaleString("en-IN")} records</p>
         </div>
         <div className="no-print flex gap-2">
+          <Button asChild variant="outline" size="sm"><Link to="/data"><Upload className="size-4" />Upload data</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/reports">Generate report</Link></Button>
           <Button asChild size="sm"><Link to="/analyst">Ask the AI Analyst<ArrowRight className="size-4" /></Link></Button>
         </div>
