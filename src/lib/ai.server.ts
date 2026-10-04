@@ -1,8 +1,23 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
 
-// Free model on Groq with 128k context and high reasoning/structured JSON accuracy
-const MODEL = "llama-3.3-70b-versatile";
+// Free models on Groq in priority order (llama-3.1-8b-instant is ultra-fast with high free-tier rate limits)
+const FREE_MODELS = [
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+  "gemma2-9b-it",
+] as const;
+
+const GRO<dyad-write path="src/lib/ai.server.ts" description="Switch to llama-3.1-8b-instant with fallback to other free Groq models">
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
+
+// Free models on Groq in priority order (llama-3.1-8b-instant is ultra-fast with high free-tier rate limits)
+const FREE_MODELS = [
+  "llama-3.1-8b-instant",
+  "llama-3.3-70b-versatile",
+  "gemma2-9b-it",
+] as const;
 
 const GROQ_API_KEY =
   process.env["GROQ_API_KEY"] ||
@@ -17,7 +32,7 @@ export class AiError extends Error {
   }
 }
 
-/** Provider abstraction: Groq free models via OpenAI-compatible endpoint. */
+/** Provider abstraction: Groq free models via OpenAI-compatible endpoint with automatic fallback. */
 export async function complete(system: string, prompt: string): Promise<string> {
   const apiKey = GROQ_API_KEY;
   if (!apiKey) throw new AiError("Groq API key is not configured.", 500);
@@ -27,28 +42,45 @@ export async function complete(system: string, prompt: string): Promise<string> 
     apiKey,
   });
 
-  try {
-    const result = await generateText({
-      model: provider(MODEL),
-      system,
-      prompt,
-      temperature: 0.1,
-    });
-    return result.text;
-  } catch (failure: unknown) {
-    console.error("Groq AI call failed:", failure);
-    const status = (failure as { statusCode?: number; status?: number })?.statusCode ?? (failure as { status?: number })?.status ?? 500;
-    if (status === 429) {
-      throw new AiError("Groq rate limit reached. Please wait a moment and try again.", 429);
+  let lastError: unknown = null;
+
+  for (const model of FREE_MODELS) {
+    try {
+      const result = await generateText({
+        model: provider(model),
+        system,
+        prompt,
+        temperature: 0.1,
+      });
+      return result.text;
+    } catch (failure: unknown) {
+      console.warn(`Groq model ${model} failed, checking next model:`, failure);
+      lastError = failure;
+      const status =
+        (failure as { statusCode?: number; status?: number })?.statusCode ??
+        (failure as { status?: number })?.status ??
+        500;
+
+      // If invalid key, no point in retrying other models
+      if (status === 401 || status === 403) {
+        throw new AiError("Invalid Groq API key or unauthorized access.", status);
+      }
     }
-    if (status === 401 || status === 403) {
-      throw new AiError("Invalid Groq API key or unauthorized access.", status);
-    }
-    throw new AiError(
-      failure instanceof Error ? failure.message : "The AI couldn't answer this. Try rephrasing.",
-      status,
-    );
   }
+
+  const finalStatus =
+    (lastError as { statusCode?: number; status?: number })?.statusCode ??
+    (lastError as { status?: number })?.status ??
+    500;
+
+  if (finalStatus === 429) {
+    throw new AiError("Groq rate limit reached across available free models. Please wait a moment and try again.", 429);
+  }
+
+  throw new AiError(
+    lastError instanceof Error ? lastError.message : "The AI couldn't answer this. Try rephrasing.",
+    finalStatus,
+  );
 }
 
 export function extractJSON(text: string): unknown {
