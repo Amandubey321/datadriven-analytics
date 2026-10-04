@@ -14,7 +14,7 @@ This document outlines the core architecture, technology stack, library assignme
 - **UI Components & Icons**: Radix UI primitives with shadcn/ui patterns and `lucide-react` icons.
 - **Data Parsing & File Handling**: `papaparse` for delimited files (CSV, TSV, TXT) and `xlsx` for spreadsheet workbooks (XLSX, XLS, ODS, etc.).
 - **Data Visualizations**: `recharts` for responsive, interactive charting (Bar, Line, Area, Composed, Pie/Donut, Funnel, Scatter, Treemap).
-- **AI Integration**: Vercel AI SDK (`ai`, `@ai-sdk/openai`) executed server-side to generate query plans and explain computed results.
+- **AI Integration**: Groq API via Vercel AI SDK (`ai`, `@ai-sdk/openai`) using the high-performance free model `llama-3.3-70b-versatile` at `https://api.groq.com/openai/v1`.
 - **Validation, Notifications & Exports**: `zod` for input schema validation, `sonner` for toast notifications, and `html-to-image` for high-resolution PNG exports.
 
 ---
@@ -24,9 +24,9 @@ This document outlines the core architecture, technology stack, library assignme
 ### 1. Data Processing vs. AI Responsibilities
 - **AI Never Computes Numbers**: The LLM must **never** calculate totals, percentages, averages, or forecasts. 
 - **Two-Phase Architecture**:
-  1. `planQuestion` (Server function): Converts natural language into a deterministic `QuerySpec` (aggregations, filters, groupings).
+  1. `planQuestion` (Server function): Converts natural language into a deterministic `QuerySpec` (aggregations, filters, groupings) using Groq.
   2. `runQuery` / `computeKPIs` / `forecast` (Client-side TS): Executes calculations strictly on the dataset in `src/lib/data/`.
-  3. `explainData` (Server function): Generates natural language narratives **only** from pre-computed tables and metrics.
+  3. `explainData` (Server function): Generates natural language narratives **only** from pre-computed tables and metrics using Groq.
 - **Data Privacy**: Sensitive fields (PAN, Aadhaar, GSTIN, phone numbers, account numbers) must be masked via `src/lib/data/semantics.ts` and never passed in raw form to external AI prompts.
 
 ### 2. File Ingestion & Parsing
